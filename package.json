@@ -1,0 +1,10 @@
+{
+  "name": "answer_scoring",
+  "version": "1.0.0",
+  "description": "Comparing student and gold answers with different models.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Erik Weitnauer",
+  "license": "ISC"
+}

@@ -1,0 +1,8 @@
+data/semeval2016
+data/local
+*.pyc
+infersent.allnli.pickle
+pretrained/GloVe
+pretrained/word2vec
+.DS_Store
+pretrained
