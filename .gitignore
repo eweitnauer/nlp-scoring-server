@@ -5,4 +5,4 @@ infersent.allnli.pickle
 pretrained/GloVe
 pretrained/word2vec
 .DS_Store
-pretrained
+temp_best_model.h5
