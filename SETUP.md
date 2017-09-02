@@ -1,7 +1,7 @@
 # Setup
 
 - clone the repository
-- install [anaconda](https://www.anaconda.com/download/)
+- install [miniconda](https://conda.io/miniconda.html) or [anaconda](https://www.anaconda.com/download/)
 - run `conda env create -f environment.yml`
 - run `./download_data.sh` in the `pretrained` folder to download required files for the Infersent model
 - in python, run the following once: `import nltk; nltk.download()`
