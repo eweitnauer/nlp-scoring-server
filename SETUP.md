@@ -12,9 +12,13 @@
 ## Manual Package Installations
 
 Alternatively to running `conda env create -f environment.yml`, you can setup a Python 2.7 environment in anaconda and manually install:
-- `conda install -c conda-forge keras fuzzywuzzy`
-- `conda install -c soumith pytorch torchvision`
-- `conda install scikit-learn nltk gensim theano`
+
+- NLP
+  - `conda install -c conda-forge keras fuzzywuzzy`
+  - `conda install -c soumith pytorch torchvision`
+  - `conda install scikit-learn nltk gensim theano`
+- Server
+  - `conda install flask flask-cors`
 
 
 ## Getting CUDA (NVidia) support for PyTorch

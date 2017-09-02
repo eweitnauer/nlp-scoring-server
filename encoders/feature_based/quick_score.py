@@ -3,6 +3,7 @@ from spell import spellChecker
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from nltk.stem.snowball import SnowballStemmer
+from numpy import nan as NaN
 
 class quickScore(object):
     stemmer = None
@@ -31,7 +32,9 @@ class quickScore(object):
 
 
     def sentence_similarity(self, sentenceA, sentenceB, stemming=True):
+        if sentenceA == sentenceB: return 1
         exactMatch , corMatch, synMatch, keywords = self.pairFeatures(sentenceA, sentenceB, stemming)
+        if keywords==0: return NaN
         return (exactMatch + corMatch + synMatch) * 1.0 / keywords
 
     def pairFeatures(self, sentenceA, sentenceB, stemming=True):
