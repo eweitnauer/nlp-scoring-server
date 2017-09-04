@@ -45,11 +45,14 @@ class ScoreController(object):
 			return jsonify(
 				{ 'name': "Automated Scoring",
 		      'version': "1.1",
-		      'errors': [],
 		      'score': score,
 		      'models': ", ".join(self.model_names),
 		      'classifier': self.classifier_name
-		    });
+		    })
 		except:
 			raise
-			return jsonify({'errors': self.errors})
+			return jsonify(
+				{ 'name': "Automated Scoring",
+		      'version': "1.1",
+		      'errors': self.errors
+		    })
