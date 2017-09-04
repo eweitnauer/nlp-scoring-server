@@ -46,7 +46,7 @@ Currently, we have the following pre-trained classifiers:
 ### Score Responses
 
 | Parameter | Optional | Description | Type | 
-| :---: | :---: | :---: | :---: | 
+| :---: | :---: | :--- | :---: | 
 | name  | always | used to provide a string which reflect the name of the api, i.e. Automated Scoring | string |  
 | version | always | value representing version of the api called | semantic version number | 
 | errors | optional | a list of errors that occured | array of strings | 
