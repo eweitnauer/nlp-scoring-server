@@ -2,7 +2,7 @@
 
 This repository combines several NLP approaches to determine the similarity of sentences.
 
-The work is funded by a joint IES grant of Dr. Michael N. Jones and Dr. Jeffrey D. Karpicke. The encoder and classifier components are based on [this work](https://github.com/FTAsr/STS) from Dr. Jones group. The server part is inspired by the implementation of [Anirudh](https://github.com/anirudhchellani) in Jeff Karpeke's group.
+The work is funded by a IES grant of Dr. Michael N. Jones and Dr. Jeffrey D. Karpicke. The encoder and classifier components are based on [this work](https://github.com/FTAsr/STS) from Dr. Jones group. The server part is inspired by the implementation of [Anirudh](https://github.com/anirudhchellani) in Dr. Karpicke's group.
 
 Please see the [SETUP.md](https://github.com/eweitnauer/nlp-scoring-server/blob/master/SETUP.md) file about how to install this project.
 
@@ -12,13 +12,13 @@ Please see the [SETUP.md](https://github.com/eweitnauer/nlp-scoring-server/blob/
 
 In order to get a score for the similarity of a response string to a target string, send a get request to `/api/score`. Provide the following query parameters:
 
-| parameter | required | use case | type |
-| :---: | :---: | :---: | :---: |
+| Parameter | Required | Use Case | Type |
+| :---: | :---: | :--- | :---: |
 | api_key | required | authenticates the api call | string | 
-| target | required | The target/gold answer to compare the student response to | string |
-| response | required | The response supplied by the student/user | string  | 
-| models | required | A comma-separated list of encoder models. See below for available models. | string |
-| classifier | optional | The name of a trained classifier (must fit the model-combination). | string |
+| target | required | target/gold answer to compare the student response to | string |
+| response | required | response supplied by the student/user | string  | 
+| models | required | comma-separated list of encoder models. See below for available models. | string |
+| classifier | optional | name of a trained classifier (must fit the model-combination). | string |
 
 Here are some example API calls:
 
@@ -29,8 +29,8 @@ Here are some example API calls:
 
 The server currently supports the following encoder models:
 
-| model name | description |
-| :---: | :---: |
+| Model Name | Description |
+| :---: | :--- |
 | infersent | embeds a whole sentence in a 4096 dim. vector; more details [here](https://github.com/facebookresearch/InferSent) |
 | bow | "bag of words"; adds up the 300 dim. vector embeddings of all words in the sentence using [these pretrained embeddings](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit) |
 | quickscore | calculates the proportion of words in the target that are included in the response, using spell correction, stemming and synonyms |
@@ -38,14 +38,14 @@ The server currently supports the following encoder models:
 
 Currently, we have the following pre-trained classifiers:
 
-| classifier name | encoders combination | target dataset |
+| Classifier Name | Encoder Combination | Target Dataset |
 | :---: | :---: | :---: |
 | bow_fb-sick | bow, feature_based | SICK |
 | infersent-sick | infersent | SICK |
 
 ### Score Responses
 
-| parameter | optional | description | type | 
+| Parameter | Optional | Description | Type | 
 | :---: | :---: | :---: | :---: | 
 | name  | always | used to provide a string which reflect the name of the api, i.e. Automated Scoring | string |  
 | version | always | value representing version of the api called | semantic version number | 
