@@ -9,7 +9,6 @@ dependencies:
 - h5py=2.7.0=np113py27_1
 - hdf5=1.8.18=0
 - keras=2.0.6=py27_0
-- libgfortran=3.0.0=0
 - mock=2.0.0=py27_0
 - pbr=3.1.1=py27_0
 - protobuf=3.3.2=py27_0

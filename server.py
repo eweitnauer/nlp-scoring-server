@@ -14,7 +14,7 @@ app.add_url_rule('/api/score', 'score', score_controller.route, methods=['GET', 
 
 if __name__ == "__main__":
 	#if os.environ.get('ENV') == 'PROD':
-		app.run(host='0.0.0.0', debug=False, threaded=True)
+		app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
 	#else:
 		#app.run(host='localhost', debug=True, threaded=True)
 
