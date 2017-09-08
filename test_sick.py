@@ -86,25 +86,25 @@ N = 2000
 # clip_data(train, N)
 # clip_data(dev, N/2)
 # clip_data(test, N)
-#print "Untrained performance: "
-# c.test(test)
+print "Untrained performance: "
+c.test(test)
 # # ************ SUMMARY ***********
 # # Test data size: 2000
 # # Test Pearson: 0.705948727038
 # # Test Spearman: 0.638738528351
 # # Test MSE: 0.0255961994753
 # # ********************************
-print "Training..."
-c.classifier = c.train(train, dev)
-print "Saving classifier as infersent_scaled-sick.h5"
-c.classifier.save('pretrained/classifiers/infersent_scaled-sick.h5')
-print "Trained performance: "
-c.test(test)
-# ************ SUMMARY *********** with 2 sig layers; saved as infersent-sick.h5
+# print "Training..."
+# c.classifier = c.train(train, dev)
+# print "Saving classifier as infersent_scaled-sick.h5"
+# c.classifier.save('pretrained/classifiers/infersent_scaled-sick.h5')
+# print "Trained performance: "
+# c.test(test)
+# ************ SUMMARY *********** 2 layers; scaled to 0..1; saved as infersent-sick.h5
 # Test data size: 4927
-# Test Pearson: 0.869410949033
-# Test Spearman: 0.818938456905
-# Test MSE: 0.00994310398156
+# Test Pearson: 0.872362947586
+# Test Spearman: 0.823647106453
+# Test MSE: 0.0154452371796
 # ********************************
 
 ###################################################################################################

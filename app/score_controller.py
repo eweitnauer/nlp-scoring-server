@@ -33,7 +33,6 @@ class ScoreController(object):
 			classifier = CachedClassifier(self.model_names, self.classifier_name)
 			return classifier.get_score([self.target], [self.response])[0]
 		except Exception as err:
-			raise
 			raise self.errors.append("internal error: could not apply classifier")
 
 	def route(self):
@@ -45,11 +44,13 @@ class ScoreController(object):
 			return jsonify(
 				{ 'name': "Automated Scoring",
 		      'version': "1.1",
-		      'errors': [],
 		      'score': score,
 		      'models': ", ".join(self.model_names),
 		      'classifier': self.classifier_name
-		    });
+		    })
 		except:
-			raise
-			return jsonify({'errors': self.errors})
+			return jsonify(
+				{ 'name': "Automated Scoring",
+		      'version': "1.1",
+		      'errors': self.errors
+		    })
