@@ -181,11 +181,8 @@ def prepare_model(dim, nclass=1):
     Set up and compile the model architecture (Logistic regression)
     """
     lrmodel = Sequential()
-    # lrmodel.add(Dense(nclass, input_dim=dim)) #set this to twice the size of sentence vector or equal to the final feature vector size
-    # lrmodel.add(Activation('softmax'))
-    # lrmodel.compile(loss='categorical_crossentropy', optimizer='adam')
-    lrmodel.add(Dense(5, input_dim=dim, activation='sigmoid'))
-    lrmodel.add(Dense(nclass, input_dim=5, activation='sigmoid'))
+    lrmodel.add(Dense(5, input_dim=dim, activation='sigmoid', name='input_layer')) # named layers help with loading & saving
+    lrmodel.add(Dense(nclass, input_dim=5, activation='sigmoid', name='output_layer'))
     lrmodel.compile(loss='mse', optimizer='adam')
     return lrmodel
 
