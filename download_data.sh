@@ -4,8 +4,8 @@ infersentpath='https://s3.amazonaws.com/senteval/infersent/infersent.allnli.pick
 # GloVe
 echo "Getting GloVe from " $glovepath
 mkdir pretrained/GloVe
-curl -LO $glovepath
-$ZIPTOOL glove.840B.300d.zip -d pretrained/GloVe
+curl -LO $glovepath && \
+unzip glove.840B.300d.zip -d pretrained/GloVe && \
 rm glove.840B.300d.zip
 
 # infersent
