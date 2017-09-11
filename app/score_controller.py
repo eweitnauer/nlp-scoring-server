@@ -50,8 +50,8 @@ class ScoreController(object):
 		except PreloadError:
 			self.errors.append("trained classfiers have to be preloaded before they can be used")
 			raise
-		except Exception:
-			self.errors.append("internal error: could not apply classifier")
+		except Exception as ex:
+			self.errors.append("internal error: " + ex.message)
 			raise
 
 	def route(self):

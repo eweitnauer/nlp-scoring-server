@@ -15,6 +15,7 @@ class quickScore(object):
         self.stemmer = SnowballStemmer('english')
         self.stoplist = stopwords.words('english')
         self.spell_checker = spellChecker()
+	wn.ensure_loaded() # transform proxy into the real thing (avoid lazy loading) so it is thread-safe
         return
 
     def synonyms(self, word):
