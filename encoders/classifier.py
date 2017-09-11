@@ -69,6 +69,8 @@ class Classifier(object):
             valid_features = np.asarray(feature_list)[valid_pos]
             valid_features = np.asarray(valid_features.tolist()) # turn array of lists into ndarray (in case an empty array was included in all_trainF)
 
+            print 'valid features', valid_features.shape
+
             with self.graph.as_default():
                 valid_yhat = np.dot(self.classifier.predict(valid_features, verbose=0), [1])
 
