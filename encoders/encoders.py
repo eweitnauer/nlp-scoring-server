@@ -14,7 +14,7 @@ fb_model = None
 # infersent creates a 4096 dim. vector embedding for a sentence
 # we can use the cosine to judge similarity, but training a classifier for
 # our specific tasks works much better
-def loadInfersent(K=100000):
+def loadInfersent(K=300000):
     global inf_model
     if inf_model: return inf_model
     inf_model = InferSent(file='encoders/infersent/infersent.allnli.pickle'

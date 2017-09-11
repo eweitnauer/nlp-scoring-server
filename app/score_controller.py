@@ -2,6 +2,18 @@ from flask import jsonify, request
 import requests
 from encoders.classifier import CachedClassifier
 
+# need to preload all models with trained classifiers
+CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
+CachedClassifier(['infersent'], 'infersent-sick')
+
+# optionally preload untrained models to make the first request faster
+CachedClassifier(['bow'])
+CachedClassifier(['quickscore'])
+CachedClassifier(['infersent'])
+
+class PreloadError(Exception):
+	pass
+
 class ScoreController(object):
 	def authenticate(self):
 		req = request.args if request.method == "GET" else request.form
@@ -26,31 +38,35 @@ class ScoreController(object):
 		else:
 			self.model_names = [name.strip() for name in self.model_names.split(',')]
 		self.classifier_name = req.get('classifier', None)
+		if self.classifier_name == 'untrained': self.classifier_name = None
 		if self.errors: raise ValueError()
 
 	def score(self):
 		try:
-			classifier = CachedClassifier(self.model_names, self.classifier_name)
+			cache_only = True if self.classifier_name else False
+			classifier = CachedClassifier(self.model_names, self.classifier_name, from_cache_only=cache_only)
+			if not classifier: raise PreloadError()
 			return classifier.get_score([self.target], [self.response])[0]
-		except Exception as err:
-			raise self.errors.append("internal error: could not apply classifier")
+		except PreloadError:
+			self.errors.append("trained classfiers have to be preloaded before they can be used")
+			raise
+		except Exception:
+			self.errors.append("internal error: could not apply classifier")
+			raise
 
 	def route(self):
 		self.errors = []
+		resp = {
+			'name': "Automated Scoring",
+		  'version': "1.1"
+		}
 		try:
 			self.extractInfo()
+			if self.model_names: resp['models'] = ", ".join(self.model_names)
+			if self.classifier_name: resp['classifier'] = self.classifier_name
 			self.authenticate()
-			score = self.score()
-			return jsonify(
-				{ 'name': "Automated Scoring",
-		      'version': "1.1",
-		      'score': score,
-		      'models': ", ".join(self.model_names),
-		      'classifier': self.classifier_name
-		    })
+			resp['score'] = self.score()
+			return jsonify(resp)
 		except:
-			return jsonify(
-				{ 'name': "Automated Scoring",
-		      'version': "1.1",
-		      'errors': self.errors
-		    })
+			resp['errors'] = self.errors
+			return jsonify(resp)

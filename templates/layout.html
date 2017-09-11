@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NLP Scoring Server</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='materialize/css/materialize.min.css') }}" media="screen,projection"
+  />
+  <style>
+  html { background: whitesmoke; }
+  </style>
+</head>
+
+<body>
+<div class='container'>
+  {% block content %} {% endblock %}
+<div>
+
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='materialize/js/materialize.min.js') }}"></script>
+
+{% block jsScripts %} {% endblock %}
+
+</body>
+
+</html>

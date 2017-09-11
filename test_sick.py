@@ -1,4 +1,4 @@
-def load_data_SICK(loc='data/SICK/', rescale=True):
+def load_data_SICK(loc='data/SICK/', rescale=True, contradiction_as_0=False):
     """
     Load the SICK semantic-relatedness dataset
     """
@@ -10,19 +10,28 @@ def load_data_SICK(loc='data/SICK/', rescale=True):
             text = line.strip().split('\t')
             trainA.append(text[1])
             trainB.append(text[2])
-            trainS.append(text[3])
+            if contradiction_as_0 and text[4] == 'CONTRADICTION':
+                trainS.append('1.0')
+            else:
+                trainS.append(text[3])
     with open(loc + 'SICK_trial.txt', 'rb') as f:
         for line in f:
             text = line.strip().split('\t')
             devA.append(text[1])
             devB.append(text[2])
-            devS.append(text[3])
+            if contradiction_as_0 and text[4] == 'CONTRADICTION':
+                devS.append('1.0')
+            else:
+                devS.append(text[3])
     with open(loc + 'SICK_test_annotated.txt', 'rb') as f:
         for line in f:
             text = line.strip().split('\t')
             testA.append(text[1])
             testB.append(text[2])
-            testS.append(text[3])
+            if contradiction_as_0 and text[4] == 'CONTRADICTION':
+                testS.append('1.0')
+            else:
+                testS.append(text[3])
 
     if rescale:
         trainS = [(float(s)-1.0)/4.0 for s in trainS[1:]]
@@ -81,10 +90,10 @@ def clip_data(data, N):
 print "Training infersent based model on SICK"
 from encoders.classifier import Classifier;
 c = Classifier(['infersent']);
-train, dev, test = load_data_SICK();
-N = 2000
+train, dev, test = load_data_SICK(contradiction_as_0=True);
+# N = 200
 # clip_data(train, N)
-# clip_data(dev, N/2)
+# clip_data(dev, N/10)
 # clip_data(test, N)
 print "Untrained performance: "
 c.test(test)
@@ -94,18 +103,30 @@ c.test(test)
 # # Test Spearman: 0.638738528351
 # # Test MSE: 0.0255961994753
 # # ********************************
-# print "Training..."
-# c.classifier = c.train(train, dev)
-# print "Saving classifier as infersent_scaled-sick.h5"
-# c.classifier.save('pretrained/classifiers/infersent_scaled-sick.h5')
-# print "Trained performance: "
-# c.test(test)
-# ************ SUMMARY *********** 2 layers; scaled to 0..1; saved as infersent-sick.h5
+# # ************ SUMMARY *********** with contradiction_as_0 option set
+# # Test data size: 4927
+# # Test Pearson: 0.464855799532
+# # Test Spearman: 0.481058474327
+# # Test MSE: 0.154645949212
+# # ********************************
+print "Training..."
+c.classifier = c.train(train, dev)
+c.classifier.save('infersent-sick.h5');
+print "Trained performance: "
+c.test(test)
+# ************ SUMMARY *********** saved as infersent-sick.h5
 # Test data size: 4927
 # Test Pearson: 0.872362947586
 # Test Spearman: 0.823647106453
 # Test MSE: 0.0154452371796
 # ********************************
+# ************ SUMMARY *********** with contradiction_as_0 option; saved as infersent-sick_rel_contra.h5
+# Test data size: 4927
+# Test Pearson: 0.85439653603
+# Test Spearman: 0.849536383428
+# Test MSE: 0.0304554283957
+# ********************************
+
 
 ###################################################################################################
 # print "Training bow + feature based model on SICK"

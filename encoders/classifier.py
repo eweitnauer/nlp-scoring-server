@@ -10,11 +10,12 @@ from sklearn.utils import shuffle
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.optimizers import Adam
+import tensorflow as tf
 
 available_models = ['quickscore', 'bow', 'infersent', 'feature_based']
 cache = {}
 
-def CachedClassifier(model_names=[], classifier_name=None):
+def CachedClassifier(model_names=[], classifier_name=None, from_cache_only=False):
     global cache, available_models
     if not model_names:
         raise ValueError("no models specified")
@@ -25,6 +26,7 @@ def CachedClassifier(model_names=[], classifier_name=None):
     key = '+'.join(model_names)
     if classifier_name: key += '@' + classifier_name
     if not (key in cache):
+        if from_cache_only: return False
         print 'cache miss', key
         cache[key] = Classifier(model_names, (classifier_name+'.h5') if classifier_name else None)
     else: print 'cache hit', key
@@ -40,6 +42,8 @@ class Classifier(object):
             print 'Loading pretrained classifier', classifier_file
             if use_pickle: self.classifier = pickle.load(open('pretrained/classifiers/' + classifier_file, 'rb'))
             else: self.classifier = keras.models.load_model('pretrained/classifiers/' + classifier_file)
+            self.classifier._make_predict_function()
+            self.graph = tf.get_default_graph()
         else:
             self.classifier = None
 
@@ -65,7 +69,9 @@ class Classifier(object):
             valid_features = np.asarray(feature_list)[valid_pos]
             valid_features = np.asarray(valid_features.tolist()) # turn array of lists into ndarray (in case an empty array was included in all_trainF)
 
-            valid_yhat = np.dot(self.classifier.predict(valid_features, verbose=0), [1])
+            with self.graph.as_default():
+                valid_yhat = np.dot(self.classifier.predict(valid_features, verbose=0), [1])
+
             # now return an array as big as the targets array, with NAN where we found an error
             yhat = np.empty(len(targets))
             yhat[:] = np.nan
@@ -76,6 +82,7 @@ class Classifier(object):
             return encoders.sentenceSimilarity(self.models, process(targets), process(responses))
 
     def train(self, trainSet, devSet, use_labels=False, seed=1234):
+        #K.set_session(self.sess)
         ## Takes an input model that can calculate similarity features for sentence pairs
         ## Returns a linear regression classifier on provided (gold) similarity scores (in 0...1)
         print 'Preparing data...'
@@ -121,6 +128,7 @@ class Classifier(object):
         return bestlrmodel
 
     def test(self, testSet):
+        #K.set_session(self.sess)
         if (self.classifier):
             all_testF = np.asarray(encoders.pairFeatures(self.models, process(testSet[0]), process(testSet[1])))
             valid_pos = getNotEmptyPositions(all_testF, verbose=True)

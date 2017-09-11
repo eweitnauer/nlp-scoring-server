@@ -2,16 +2,15 @@ from encoders.classifier import Classifier
 
 ## Uncomment one of the following lines to load that classfier
 
-# unsupervised:
+# untrained:
 #classifier = Classifier(model_names=['quickscore'], classifier_file=None)
 #classifier = Classifier(model_names=['bow'], classifier_file=None)
 #classifier = Classifier(model_names=['infersent'], classifier_file=None)
 #classifier = Classifier(model_names=['quickscore', 'bow'], classifier_file=None)
 
-
-#classifier = Classifier(model_names=['bow', 'feature_based'], classifier_file='bow+fb+sts1214.file', use_pickle=True)
-#classifier = Classifier(model_names=['feature_based'], classifier_file='fb+sts1214.file')
-#classifier = Classifier(model_names=['infersent'], classifier_file='feed+college.file')
+# trained:
+classifier = Classifier(model_names=['bow', 'feature_based'], classifier_file='bow_fb-sick.h5')
+#classifier = Classifier(model_names=['infersent'], classifier_file='infersent-sick.h5')
 
 print '\nWelcome to Automatic Short Answer Grading system.'
 print 'Using models ', classifier.model_names
@@ -26,6 +25,3 @@ while True:
         print 'score: ', classifier.get_score([goldA], [studA])
     except KeyboardInterrupt:
         raise
-    # except Exception, e:
-    #     print "Error: %s" % e
-    #     print 'Please correct the error and try again.'

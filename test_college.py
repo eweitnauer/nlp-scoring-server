@@ -66,7 +66,7 @@ def clip_data(data, N):
 # c.classifier = c.train(train, dev)
 # print "Trained performance: "
 # c.test(test)
-# # ************ SUMMARY *********** with 2 sigmoid layers
+# # ************ SUMMARY ***********
 # # Test data size: 2366
 # # Test Pearson: 0.770934291225
 # # Test Spearman: 0.764832719154
@@ -74,10 +74,10 @@ def clip_data(data, N):
 # # ********************************
 
 ###################################################################################################
-# print "Training infersent based model on college"
-# from encoders.classifier import Classifier;
-# c = Classifier(['infersent']);
-# train, dev, test = load_data_college();
+print "Training infersent based model on college"
+from encoders.classifier import Classifier;
+c = Classifier(['infersent'], 'infersent-sick_rel_contra.h5');
+train, dev, test = load_data_college();
 # N = 2000
 # # clip_data(train, N)
 # # clip_data(dev, N/2)
@@ -92,8 +92,8 @@ def clip_data(data, N):
 # # ********************************
 # print "Training..."
 # c.classifier = c.train(train, dev)
-# print "Trained performance: "
-# c.test(test)
+print "Trained performance: "
+c.test(test)
 # # ************ SUMMARY ***********
 # # Test data size: 2377
 # # Test Pearson: 0.862371975378
@@ -109,23 +109,23 @@ def clip_data(data, N):
 # Test Spearman: 0.590724986585
 # Test MSE: 0.155956669515
 # ********************************
+# ************ SUMMARY *********** with 0 score for contradiction cases
+# Test data size: 2377
+# Test Pearson: 0.425360783695
+# Test Spearman: 0.445096454362
+# Test MSE: 0.134747540396
+# ********************************
 
 ###################################################################################################
-print "Training bow + feature based model on college"
-from encoders.classifier import Classifier;
-c = Classifier(['bow', 'feature_based'], 'bow_fb-sick.h5');
-train, dev, test = load_data_college();
-# print "Training..."
-# c.classifier = c.train(train, dev)
-print "Trained performance: "
-c.test(test)
-# # ************ SUMMARY *********** 1 linear layer
-# # Test data size: 2366
-# # Test Pearson: 0.819677470176
-# # Test Spearman: 0.818287347537
-# # Test MSE: 0.0562085720165
-# # ********************************
-# # ************ SUMMARY *********** 2 sigmoid layers
+# print "Training bow + feature based model on college"
+# from encoders.classifier import Classifier;
+# c = Classifier(['bow', 'feature_based'], 'bow_fb-sick.h5');
+# train, dev, test = load_data_college();
+# # print "Training..."
+# # c.classifier = c.train(train, dev)
+# print "Trained performance: "
+# c.test(test)
+# # ************ SUMMARY ***********
 # # Test data size: 2366
 # # Test Pearson: 0.840671805885
 # # Test Spearman: 0.825072970374

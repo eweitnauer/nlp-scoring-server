@@ -1,0 +1,200 @@
+{% extends "layout.html" %}{% block content %}
+<h4>NLP Scoring Server</h4>
+<h5>Input</h5>
+<div class="row">
+<div class="col s12">
+<form class="card" action="#">
+  <div class="card-content">
+  <div class="row">
+    <div class="input-field col s6">
+      <input type=text id='target' required>
+      <label>Gold Answer (Target)</label>
+    </div>
+    <div class="input-field col s6">
+      <input type=text id='response' required>
+      <label>Student Answer (Response)</label>
+    </div>
+  </div>
+  <div class='nlp-models'>
+    <div class="row nlp-model">
+      <div class="input-field col s5 offset-s1">
+        <select class='encoder'>
+          <option value="" disabled selected>Choose your option</option>
+        </select>
+        <label>Encoder</label>
+      </div>
+      <div class="input-field col s5">
+        <select class='classifier'>
+          <option value="" disabled selected>Choose your option</option>
+        </select>
+        <label>Classifier</label>
+      </div>
+      <div class="col s1" style='text-align: right'>
+        <a class="hide remove_row btn-floating btn waves-effect waves-light orange" style="margin-top: 1.3rem;"><i class="material-icons">remove</i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s1 offset-s11" style='text-align: right'>
+      <a class="add_row btn-floating btn waves-effect waves-light green" style="margin-top: 1.3rem;"><i class="material-icons">add</i></a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12 center">
+      <a id='score' class="disabled waves-effect waves-light btn"><i class="material-icons left">check</i>Score</a>
+    </div>
+  </div>
+  </div>
+</form>
+</div>
+</div>
+
+<h5>Scoring Results</h5>
+
+<div class='row'>
+<div id='results' class="col s12">
+</div>
+</div>
+
+{% endblock %}
+{% block jsScripts %}
+<script>
+var models = {{ models|tojson }};
+var encoder_opts = getOptions(Object.keys(models));
+
+function queryScoreServer(target, response, model, score_el, time_el) {
+  var t0 = Date.now();
+  var params = { target, response, models: model.encoder };
+  if (model.classifier) params.classifier = model.classifier;
+  $.get("/api/score", params, function(data) {
+    if (data.errors && data.errors.length > 0) {
+      score_el.html('<span class="deep-orange lighten-4">'+data.errors.join('\n')+'</span>');
+    } else {
+      score_el.html('<span>'+data.score+'</span>');
+    }
+    time_el.html(Date.now()-t0 + ' ms');
+  }, 'json').fail(function(resp) {
+    score_el.html('<span class="deep-orange lighten-4">'+resp.statusText+'</span>');
+  });
+}
+
+function validate() {
+  if ($('#target').val() !== "" && $('#response').val() !== "" && getModels().length > 0) {
+    $('#score').removeClass('disabled');
+  }
+  else $('#score').addClass('disabled');
+}
+
+function getOptions(values, skip_label) {
+  return ((skip_label ? [] : ['<option value="" disabled selected>Choose your option</option>'])
+    .concat(values.map(function(value, idx) {
+      return "<option value='" + value + "'" + (skip_label && idx === 0 ? 'selected' : '')
+             + ">" + value + "</option>";
+    })).join('\n'));
+}
+
+function updateClassfier(idx, value) {
+  var classifiers = $('.select-wrapper.classifier');
+  classifiers.each(function(i, el) {
+    if (i !== idx) return;
+    $('<select class="classifier">' + getOptions(models[value] || [], true) + "</select>")
+      .replaceAll(el)
+      .material_select();
+  });
+}
+
+function processQueries(target, response, models) {
+  var el = $('<div class="card" style="margin-top: 1rem"><div class="card-content"><p>Target: "' + target + '", Response: "' + response + '"<br/></p>' +
+     '<table><thead><tr><th>Model</th><th>Score</th><th>Time</th></tr></thead><tbody></tbody></table></div></div>');
+  $('#results').prepend(el);
+  var tbody = $('tbody', el);
+  models.forEach(model => {
+    var tr = $('<tr></tr>');
+    tr.append('<td>' + model.encoder + ' (' + model.classifier + ')</td>');
+    let score_el = $('<td>' + spinner_html + '</td>');
+    let time_el = $('<td>...</td>');
+    tr.append(score_el).append(time_el);
+    queryScoreServer(target, response, model, score_el, time_el);
+    tbody.append(tr);
+  });
+}
+
+function getModels() {
+  return $.map($('.nlp-model'), function(el) {
+    return { encoder: $('select.encoder', el).val()
+           , classifier: $('select.classifier', el).val()}
+  }).filter(q => q.encoder);
+}
+
+$(document).ready(function() {
+  $('.encoder').html(encoder_opts);
+
+  $('.nlp-models').on('change', '.encoder', function() {
+    let idx = $('select.encoder').index(this);
+    updateClassfier(idx, this.value);
+    validate();
+  });
+
+  $('.nlp-models').on('change', '.classifier', validate);
+
+  $('#target').on('input', validate);
+  $('#response').on('input', validate);
+
+  $('.nlp-models').on('click', '.remove_row', function() {
+    var idx = $('.remove_row').index(this);
+    $($('.nlp-model')[idx]).remove();
+  });
+
+  $('.add_row').on('click', function() {
+    var el = $(nlp_model_html);
+    $('.nlp-models').append(el);
+    $('.encoder', el).html(encoder_opts);
+    $('select', el).material_select();
+  });
+
+  $('select').material_select();
+
+  $('#score').on('click', function() {
+    processQueries($('#target').val(), $('#response').val(), getModels());
+  });
+});
+
+var nlp_model_html =
+`
+<div class="row nlp-model">
+  <div class="input-field col s5 offset-s1">
+    <select class='encoder'>
+      <option value="" disabled selected>Choose your option</option>
+    </select>
+    <label>Encoder</label>
+  </div>
+  <div class="input-field col s5">
+    <select class='classifier'>
+      <option value="" disabled selected>Choose your option</option>
+    </select>
+    <label>Classifier</label>
+  </div>
+  <div class="col s1" style='text-align: right'>
+    <a class="remove_row btn-floating btn waves-effect waves-light orange" style="margin-top: 1.3rem;"><i class="material-icons">remove</i></a>
+  </div>
+</div>
+`
+
+var spinner_html =
+`
+<div class="preloader-wrapper small active">
+    <div class="spinner-layer spinner-green-only">
+      <div class="circle-clipper left">
+        <div class="circle"></div>
+      </div><div class="gap-patch">
+        <div class="circle"></div>
+      </div><div class="circle-clipper right">
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+`
+</script>
+{% endblock %}
