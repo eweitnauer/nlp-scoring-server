@@ -25,4 +25,4 @@ score_controller = ScoreController()
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
 
 if __name__ == "__main__":
-	app.run(host='127.0.0.1', port=5001, debug=False, threaded=True)
+	app.run(host='127.0.0.1', port=5001, debug=False, threaded=False)
