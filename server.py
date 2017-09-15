@@ -4,9 +4,11 @@ from app.score_controller import ScoreController
 
 models = {
   'quickscore': ['untrained']
-, 'bow': ['untrained']
-, 'infersent': ['untrained', 'infersent-sick']
-, 'bow, feature_based': ['bow_fb-sick']
+, 'feature_based': ['fb-college']
+, 'bow': ['untrained', 'bow-college']
+, 'bow, feature_based': ['bow_fb-sick', 'bow_fb-college']
+, 'infersent': ['untrained', 'infersent-sick', 'infersent-college']
+, 'infersent, feature_based': ['infersent_fb-college']
 }
 
 app = Flask(__name__)
