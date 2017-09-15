@@ -140,17 +140,17 @@ class Classifier(object):
             yhat = np.dot(self.classifier.predict(testF, verbose=0), [1]) # change to 1d array
             testY = np.asarray(testSet[2])[valid_pos]
             testY = np.asarray(testY.tolist()) # turn array of lists into ndarray (in case an empty array was included in all_trainF)
-            test_score = testY*5.0
+            test_score = testY #*5.0
         else:
             all_yhat = encoders.sentenceSimilarity(self.models, process(testSet[0]), process(testSet[1]))
             valid_pos = getNotNaNPositions(all_yhat, verbose=True)
             yhat = np.asarray(all_yhat)[valid_pos]
             testY = np.asarray(testSet[2])[valid_pos]
-            test_score = testY*5.0
+            test_score = testY #*5.0
 
         #import pdb; pdb.set_trace();
 
-        yhat_score = np.clip(yhat*5.0, 0.0, 5.0)
+        yhat_score = np.clip(yhat, 0.0, 1.0)#5.0)
         pr = pearsonr(yhat_score, test_score)[0]
         sr = spearmanr(yhat_score, test_score)[0]
         se = mse(yhat, testY)
