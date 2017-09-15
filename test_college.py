@@ -49,35 +49,47 @@ def clip_data(data, N):
 	data[1] = data[1][0:N]
 	data[2] = data[2][0:N]
 
-###################################################################################################
-# print "Training BOW+LR model on college"
-# from encoders.classifier import Classifier;
-# c = Classifier(['bow']);
-# train, dev, test = load_data_college();
-# # print "Untrained performance: "
-# # c.test(test)
-# # ************ SUMMARY ***********
-# # Test data size: 2366
-# # Test Pearson: 0.609879183339
-# # Test Spearman: 0.647898161358
-# # Test MSE: 0.146632924546
-# # ********************************
-# print "Training..."
-# c.classifier = c.train(train, dev)
-# print "Trained performance: "
-# c.test(test)
-# # ************ SUMMARY ***********
-# # Test data size: 2366
-# # Test Pearson: 0.770934291225
-# # Test Spearman: 0.764832719154
-# # Test MSE: 0.0642747128176
-# # ********************************
+train, dev, test = load_data_college();
+from encoders.classifier import Classifier;
 
 ###################################################################################################
-print "Training infersent based model on college"
-from encoders.classifier import Classifier;
-c = Classifier(['infersent'], 'infersent-sick_rel_contra.h5');
-train, dev, test = load_data_college();
+c = Classifier(['feature_based']);
+print "Training (feature_based)..."
+c.classifier = c.train(train, dev)
+c.classifier.save('pretrained/classifiers/fb-college.h5')
+print "Trained performance (fb): "
+c.test(test)
+# ************ SUMMARY ***********
+# Test data size: 2377
+# Test Pearson: 0.780165116222
+# Test Spearman: 0.773093078166
+# Test MSE: 0.0618294011138
+# ********************************
+
+###################################################################################################
+c = Classifier(['bow']);
+# print "Untrained performance: "
+# c.test(test)
+# ************ SUMMARY ***********
+# Test data size: 2366
+# Test Pearson: 0.609879183339
+# Test Spearman: 0.647898161358
+# Test MSE: 0.146632924546
+# ********************************
+print "Training (bow)..."
+c.classifier = c.train(train, dev)
+c.classifier.save('pretrained/classifiers/bow-college.h5')
+print "Trained performance (bow): "
+c.test(test)
+# ************ SUMMARY ***********
+# Test data size: 2371
+# Test Pearson: 0.815727992469
+# Test Spearman: 0.814669747831
+# Test MSE: 0.0529697648042
+# ********************************
+
+###################################################################################################
+c = Classifier(['infersent']);
 # N = 2000
 # # clip_data(train, N)
 # # clip_data(dev, N/2)
@@ -90,16 +102,17 @@ train, dev, test = load_data_college();
 # # Test Spearman: 0.704158202389
 # # Test MSE: 0.142912132193
 # # ********************************
-# print "Training..."
-# c.classifier = c.train(train, dev)
-print "Trained performance: "
+print "Training (infersent)..."
+c.classifier = c.train(train, dev)
+c.classifier.save('pretrained/classifiers/infersent-college.h5')
+print "Trained performance (infersent): "
 c.test(test)
-# # ************ SUMMARY ***********
-# # Test data size: 2377
-# # Test Pearson: 0.862371975378
-# # Test Spearman: 0.849715645139
-# # Test MSE: 0.0403809500897
-# # ********************************
+# ************ SUMMARY ***********
+# Test data size: 2377
+# Test Pearson: 0.864566020796
+# Test Spearman: 0.85160629806
+# Test MSE: 0.0403718484387
+# ********************************
 
 # Results with infersent trained on SICK data:
 # (actually worse than untrained!)
@@ -117,20 +130,18 @@ c.test(test)
 # ********************************
 
 ###################################################################################################
-# print "Training bow + feature based model on college"
-# from encoders.classifier import Classifier;
-# c = Classifier(['bow', 'feature_based'], 'bow_fb-sick.h5');
-# train, dev, test = load_data_college();
-# # print "Training..."
-# # c.classifier = c.train(train, dev)
-# print "Trained performance: "
-# c.test(test)
-# # ************ SUMMARY ***********
-# # Test data size: 2366
-# # Test Pearson: 0.840671805885
-# # Test Spearman: 0.825072970374
-# # Test MSE: 0.0462812149101
-# # ********************************
+c = Classifier(['bow', 'feature_based']);
+print "Training (bow + feature_based)..."
+c.classifier = c.train(train, dev)
+c.classifier.save('pretrained/classifiers/bow_fb-college.h5');
+print "Trained performance (bow + feature_based): "
+c.test(test)
+# ************ SUMMARY ***********
+# Test data size: 2371
+# Test Pearson: 0.851198922554
+# Test Spearman: 0.838510775468
+# Test MSE: 0.0441557772239
+# ********************************
 #
 # # Results with bow+fb trained on SICK data:
 # ************ SUMMARY ***********
@@ -140,3 +151,16 @@ c.test(test)
 # Test MSE: 0.142136707951
 # ********************************
 
+###################################################################################################
+c = Classifier(['infersent', 'feature_based']);
+print "Training (infersent + feature_based)..."
+c.classifier = c.train(train, dev)
+c.classifier.save('pretrained/classifiers/infersent_fb-college.h5');
+print "Trained performance (infersent + feature based): "
+c.test(test)
+# ************ SUMMARY ***********
+# Test data size: 2377
+# Test Pearson: 0.886186401746
+# Test Spearman: 0.868906840594
+# Test MSE: 0.0339921869165
+# ********************************

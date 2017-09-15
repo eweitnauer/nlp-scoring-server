@@ -5,7 +5,7 @@ import numpy as np
 
 class InferSent(object):
     def __init__(self, file='encoders/infersent/infersent.allnli.pickle'
-                     , K=300000
+                     , K=500000
                      , use_cuda=False):
         if use_cuda:
             self.model = torch.load(file)

@@ -4,6 +4,7 @@ import keras.models
 import re
 import numpy as np
 from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import r2_score
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
 from sklearn.utils import shuffle
@@ -178,6 +179,13 @@ def getNotEmptyPositions(data_list, verbose=False):
 def process(strings):
     return [re.sub('[!"#$%&\'()*+,-./:;<=>?@\\[\\]\\^_`{|}~]', '', string).lower().strip() for string in strings]
 
+def prepare_label_model(dim, nclass):
+    lrmodel = Sequential()
+    lrmodel.add(Dense(nclass, input_dim=dim)) #set this to twice the size of sentence vector or equal to the final feature vector size
+    lrmodel.add(Activation('softmax'))
+    lrmodel.compile(loss='categorical_crossentropy', optimizer='adam') # or rather mse?
+    return lrmodel
+
 def prepare_model(dim, nclass=1):
     """
     Set up and compile the model architecture (Logistic regression)
@@ -193,18 +201,20 @@ def train_model(lrmodel, X, Y, devX, devY):
     Train model, using pearsonr on dev for early stopping
     """
     done = False
-    best = -1
+    best = -10000
     early_stop_count = 0
-    max_epoch = 10000
+    max_epoch = 1000
     epoch = 0
 
     while not done and epoch < max_epoch:
         lrmodel.fit(X, Y, epochs=20, verbose=0, shuffle=False, validation_data=(devX, devY))
         epoch += 20
         yhat = np.dot(lrmodel.predict(devX, verbose=0), [1])
-        score = pearsonr(yhat, devY)[0]
+        score = r2_score(devY, yhat)
+        #score = -mse(devY, yhat)
+        #score = pearsonr(yhat, devY)[0]
         if score > best:
-            print 'new best pearson R = ' + str(score)
+            print 'new best score = ' + str(score)
             best = score
             lrmodel.save('temp_best_model.h5')
         else:
@@ -216,6 +226,11 @@ def train_model(lrmodel, X, Y, devX, devY):
     score = mse(yhat, devY)
     print 'Dev MSE: ' + str(score)
     return lrmodel
+
+def decode_labels(labels):
+    dim = labels.shape[1]
+    if dim == 1: return labels
+    return np.dot(labels, np.arange(1, dim))
 
 def encode_labels(labels, nclass=5):
     """

@@ -16,7 +16,7 @@ class Bow(object):
     """
     w2v = None
 
-    def __init__(self, modelFile, limit=40000):
+    def __init__(self, modelFile, limit=500000):
         print("bow init: loading word2vec model")
         self.w2v = KeyedVectors.load_word2vec_format(modelFile, binary=True, limit=limit)
         self.w2v.init_sims(replace=True)

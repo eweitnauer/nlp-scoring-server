@@ -14,7 +14,7 @@ fb_model = None
 # infersent creates a 4096 dim. vector embedding for a sentence
 # we can use the cosine to judge similarity, but training a classifier for
 # our specific tasks works much better
-def loadInfersent(K=300000):
+def loadInfersent(K=500000):
     global inf_model
     if inf_model: return inf_model
     inf_model = InferSent(file='encoders/infersent/infersent.allnli.pickle'
@@ -28,7 +28,7 @@ def loadInfersent(K=300000):
 def loadBow():
     global bow_model
     if bow_model: return bow_model
-    bow_model = Bow('pretrained/word2vec/GoogleNews-vectors-negative300.bin')
+    bow_model = Bow('pretrained/word2vec/GoogleNews-vectors-negative300.bin', limit=500000)
     return bow_model
 
 # the 'old', internal algorithm that just looks at overlap between words,
