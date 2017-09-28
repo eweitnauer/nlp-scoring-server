@@ -20,6 +20,9 @@ class PreloadError(Exception):
 	pass
 
 class ScoreController(object):
+	def __init__(self, max_sentence_len=250):
+		self.max_sentence_len = max_sentence_len
+
 	def authenticate(self):
 		req = request.args if request.method == "GET" else request.form
 		api_key = req.get('api_key', None)
@@ -36,8 +39,10 @@ class ScoreController(object):
 		req = request.args if request.method == "GET" else request.form
 		self.target = req.get('target', None)
 		if not self.target: self.errors.append("'target' not present")
+		elif len(self.target) > self.max_sentence_len: self.errors.append("'target' too long")
 		self.response = req.get('response', None)
 		if not self.response: self.errors.append("'response' not present")
+		elif len(self.response) > self.max_sentence_len: self.errors.append("'response' too long")
 		self.model_names = req.get('models', None)
 		if not self.model_names: self.errors.append("'models' not present")
 		else:

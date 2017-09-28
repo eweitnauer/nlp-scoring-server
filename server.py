@@ -23,7 +23,7 @@ def index():
 def score():
 	return render_template('score.html', models=models)
 
-score_controller = ScoreController()
+score_controller = ScoreController(max_sentence_len=250)
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
 
 if __name__ == "__main__":
