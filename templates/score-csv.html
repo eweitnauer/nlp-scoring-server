@@ -1,0 +1,235 @@
+{% extends "layout.html" %}{% block content %}
+<h4>NLP Scoring Server</h4>
+<h5>Input</h5>
+<div class="row">
+<div class="col s12">
+<form class="card" action="#">
+  <div class="card-content">
+    <div class="row">
+      <div class="file-field input-field col s12">
+        <div class="btn">
+          <span>CSV File</span>
+          <input id="csvFile" required type="file">
+        </div>
+        <div class="file-path-wrapper">
+          <input class="file-path validate" type="text">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s6">
+        <select class='target-column-name'>
+        </select>
+        <label>CSV Row Name for Gold Answer</label>
+      </div>
+      <div class="input-field col s6">
+        <select class='response-column-name'>
+        </select>
+        <label>CSV Row Name for Student Answer</label>
+      </div>
+    </div>
+
+    <div class='nlp-models'>
+      <div class="row nlp-model">
+        <div class="input-field col s5 offset-s1">
+          <select class='encoder'>
+            <option value="" disabled selected>Choose your option</option>
+          </select>
+          <label>Encoder</label>
+        </div>
+        <div class="input-field col s5">
+          <select class='classifier'>
+            <option value="" disabled selected>Choose your option</option>
+          </select>
+          <label>Classifier</label>
+        </div>
+        <div class="col s1" style='text-align: right'>
+          <a class="hide remove_row btn-floating btn waves-effect waves-light orange" style="margin-top: 1.3rem;"><i class="material-icons">remove</i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input-field col s12 center">
+        <a id='score' class="disabled waves-effect waves-light btn"><i class="material-icons left">check</i>Score and Download</a>
+      </div>
+    </div>
+  </div>
+</form>
+</div>
+</div>
+
+<div class="card" id="progress" style="display: none; margin-top: 1rem"><div class="card-content">
+  <div class="progress">
+    <div class="determinate" style="width: 70%"></div>
+  </div>
+</div></div>
+
+{% endblock %}
+{% block jsScripts %}
+<script>
+var models = {{ models|tojson }};
+var encoder_opts = getOptions(Object.keys(models));
+var csv_data = [];
+
+function queryScoreServer(target, response, model, callback) {
+  var params = { target, response, models: model.encoder };
+  if (model.classifier) params.classifier = model.classifier;
+  let xhr = $.get("/api/score", params, function(data) {
+    if (data.errors && data.errors.length > 0) {
+      callback(null, 'ERROR');
+    } else {
+      callback(null, data.score);
+    }
+  }, 'json').fail(function(resp) {
+    console.log('fail', resp, xhr.responseText, xhr.status);
+    callback(resp, null);
+  });
+}
+
+function validate() {
+  if ($('#target-column-name').val() !== "" && $('#response-column-name').val() !== "" && getModels().length > 0 && $('#csvFile')[0].files.length === 1) {
+    $('#score').removeClass('disabled');
+  }
+  else $('#score').addClass('disabled');
+}
+
+function getOptions(values, skip_label) {
+  return ((skip_label ? [] : ['<option value="" disabled selected>Choose your option</option>'])
+    .concat(values.map(function(value, idx) {
+      return "<option value='" + value + "'" + (skip_label && idx === 0 ? 'selected' : '')
+             + ">" + value + "</option>";
+    })).join('\n'));
+}
+
+function updateClassfier(idx, value) {
+  var classifiers = $('.select-wrapper.classifier');
+  classifiers.each(function(i, el) {
+    if (i !== idx) return;
+    $('<select class="classifier">' + getOptions(models[value] || [], true) + "</select>")
+      .replaceAll(el)
+      .material_select();
+  });
+}
+
+function processQuery(target_col_name, response_col_name, model) {
+  if (!model || !csv_data) return;
+  var progress = $('.progress .determinate');
+  progress.css('width', '0%');
+  $('#progress').css('display', '');
+  $('#score').addClass('disabled');
+
+  csv_scores = [];
+  if (csv_data.meta.fields.indexOf('score') === -1) csv_data.meta.fields.push('score');
+  if (csv_data.meta.fields.indexOf('scoring_models') === -1) csv_data.meta.fields.push('scoring_models');
+  if (csv_data.meta.fields.indexOf('scoring_classifier') === -1) csv_data.meta.fields.push('scoring_classifier');
+  function processRow(idx) {
+    progress.css('width', (100*idx/csv_data.data.length).toFixed(2)+'%');
+    if (idx >= csv_data.data.length) {
+      downloadFile();
+      setTimeout(function() {
+        $('#progress').css('display', 'none');
+        $('#score').removeClass('disabled');
+      }, 500);
+    }
+    else {
+      var row = csv_data.data[idx];
+      queryScoreServer(row[target_col_name], row[response_col_name], model
+        , function(err, score) {
+          if (err) alert(JSON.stringify(err));
+          else {
+            row.score = score;
+            row.scoring_models = model.encoder;
+            if (model.classifier) row.scoring_classifier = model.classifier;
+            processRow(idx+1);
+          }
+      });
+    }
+  }
+  processRow(0);
+}
+
+function downloadFile() {
+  let filename = $('#csvFile').val().replace(/^.*?([^\\\/]*)$/, '$1');
+  let parts = filename.split('.');
+  parts[0] += '_scored';
+  filename = parts.join('.');
+  let csv = Papa.unparse(csv_data);
+  let csvBlob = new Blob([csv], {type: 'text/csv, charset=UTF-8'})
+  var csvUrl = URL.createObjectURL(csvBlob);
+  var downloadLink = document.createElement("a");
+  downloadLink.href = csvUrl;
+  downloadLink.download = filename;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
+function getModels() {
+  return $.map($('.nlp-model'), function(el) {
+    return { encoder: $('select.encoder', el).val()
+           , classifier: $('select.classifier', el).val()}
+  }).filter(q => q.encoder);
+}
+
+$(document).ready(function() {
+  $('.encoder').html(encoder_opts);
+
+  $('.nlp-models').on('change', '.encoder', function() {
+    let idx = $('select.encoder').index(this);
+    updateClassfier(idx, this.value);
+    validate();
+  });
+
+  $('.nlp-models').on('change', '.classifier', validate);
+
+  $('#target-column-name').on('input', validate);
+  $('#response-column-name').on('input', validate);
+
+  $('.nlp-models').on('click', '.remove_row', function() {
+    var idx = $('.remove_row').index(this);
+    $($('.nlp-model')[idx]).remove();
+  });
+
+  $('select').material_select();
+
+  $('#score').on('click', function() {
+    processQuery(decodeURI($('select.target-column-name').val()), decodeURI($('select.response-column-name').val()), getModels()[0]);
+  });
+
+  $('#csvFile').change(onCSVFileChange);
+});
+
+  function updateSelectOptions(el_class, option_str) {
+    $('<select class="'+el_class+'">' + option_str + "</select>")
+      .replaceAll($('.select-wrapper.'+el_class));
+  }
+
+  function onCSVFileChange() {
+    csv_data = null;
+    validate();
+    let file = $("#csvFile")[0].files[0];
+    if (!file) return;
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        console.log(results);
+        csv_data = results;
+        let selectOpts = results.meta.fields.map(col_name => {
+          let hmtl_escaped = new Option(col_name).innerHTML;
+          let attr_escaped = encodeURI(col_name);
+          return '<option value="'+attr_escaped+ '">' + hmtl_escaped + '</option>';
+        }).join('\n');
+        updateSelectOptions("target-column-name", selectOpts);
+        $('.target-column-name option[value=target]').attr('selected', true);
+        $('.target-column-name').material_select();
+        updateSelectOptions("response-column-name", selectOpts);
+        $('.response-column-name option[value=response]').attr('selected', true);
+        $('.response-column-name').material_select();
+
+      }
+    });
+  }
+</script>
+{% endblock %}

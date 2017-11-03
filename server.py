@@ -23,6 +23,10 @@ def index():
 def score():
 	return render_template('score.html', models=models)
 
+@app.route('/score/csv')
+def score_csv():
+	return render_template('score-csv.html', models=models)
+
 score_controller = ScoreController(max_sentence_len=250)
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
 

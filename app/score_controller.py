@@ -1,6 +1,7 @@
 from flask import jsonify, request
 import requests
 from encoders.classifier import CachedClassifier
+import math
 
 # need to preload all models with trained classifiers
 CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
@@ -56,7 +57,9 @@ class ScoreController(object):
 			cache_only = True if self.classifier_name else False
 			classifier = CachedClassifier(self.model_names, self.classifier_name, from_cache_only=cache_only)
 			if not classifier: raise PreloadError()
-			return classifier.get_score([self.target], [self.response])[0]
+			score = classifier.get_score([self.target], [self.response])[0]
+			if math.isnan(score): score = "NaN"
+			return score
 		except PreloadError:
 			self.errors.append("trained classfiers have to be preloaded before they can be used")
 			raise
