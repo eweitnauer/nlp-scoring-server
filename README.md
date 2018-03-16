@@ -6,7 +6,7 @@ The work is funded by a IES grant of Dr. Michael N. Jones and Dr. Jeffrey D. Kar
 
 Please see the [SETUP.md](https://github.com/eweitnauer/nlp-scoring-server/blob/master/SETUP.md) file about how to install this project.
 
-## API Specs v1.1
+## API Specs v1.2
 
 ### Score Requests
 
@@ -14,9 +14,9 @@ In order to get a score for the similarity of a response string to a target stri
 
 | Parameter | Required | Use Case | Type |
 | :---: | :---: | :--- | :---: |
-| api_key | required | authenticates the api call | string | 
+| api_key | required | authenticates the api call | string |
 | target | required | target/gold answer to compare the student response to | string |
-| response | required | response supplied by the student/user | string  | 
+| response | required | response supplied by the student/user | string  |
 | models | required | comma-separated list of encoder models. See below for available models. | string |
 | classifier | optional | name of a trained classifier (must fit the model-combination). | string |
 
@@ -45,11 +45,46 @@ Currently, we have the following pre-trained classifiers:
 
 ### Score Responses
 
-| Parameter | Optional | Description | Type | 
-| :---: | :---: | :--- | :---: | 
+| Parameter | Optional | Description | Type |
+| :---: | :---: | :--- | :---: |
 | name  | always | used to provide a string which reflect the name of the api, i.e. Automated Scoring | string |  
-| version | always | value representing version of the api called | semantic version number | 
-| errors | optional | a list of errors that occured | array of strings | 
+| version | always | value representing version of the api called | semantic version number |
+| errors | optional | a list of errors that occurred | array of strings |
 | score | optional | the similarity score between target and response | number between 0 and 1 |
+| models | optional | the models that were used | array of strings |
+| classifier | optional | the classifier that was used | string |
+
+
+
+### Score Paragraph Requests
+
+In order to get a score matrix that compares several targets (idea units) with a student response, send
+a get or post request to `/api/score-par`. The student response will be split into sentences.
+Each response sentence will be compared to each idea unit using the same method as in the Score Requests.
+Provide the following query parameters:
+
+| Parameter | Required | Use Case | Type |
+| :---: | :---: | :--- | :---: |
+| api_key | required | authenticates the api call | string |
+| targets | required | JSON string of array of idea units to compare the student response to | string |
+| response | required | response supplied by the student/user, will be split into sentences | string  |
+| models | required | comma-separated list of encoder models. See below for available models. | string |
+| classifier | optional | name of a trained classifier (must fit the model-combination). | string |
+
+Here are some example API calls:
+
+- `/api/score-par?targets=["plants need water to grow", "plants need sunlight to grow"]&response=plants grow in the sun. plants are green.&models=bow,feature_based&classifier=bow_fb-sick`
+
+See the previous section for supported encoder models and classifiers.
+
+### Score Responses
+
+| Parameter | Optional | Description | Type |
+| :---: | :---: | :--- | :---: |
+| name  | always | used to provide a string which reflect the name of the api, i.e. Automated Scoring | string |  
+| version | always | value representing version of the api called | semantic version number |
+| errors | optional | a list of errors that occurred | array of strings |
+| sentences | optional | student response split into sentences | array of strings |
+| scores | optional | array of score arrays; the 1st score array contains the similarity scores of the first response sentence to each idea unit | array of arrays of scores between 0 and 1 |
 | models | optional | the models that were used | array of strings |
 | classifier | optional | the classifier that was used | string |

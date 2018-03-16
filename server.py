@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, redirect, url_for, render_template
 from flask_cors import CORS
 from app.score_controller import ScoreController
+from app.score_par_controller import ScoreParController
 
 models = {
   'quickscore': ['untrained']
@@ -28,7 +29,9 @@ def score_csv():
 	return render_template('score-csv.html', models=models)
 
 score_controller = ScoreController(max_sentence_len=250)
+score_par_controller = ScoreParController(max_par_len=1000, max_targets=5, max_responses=5)
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
+app.add_url_rule('/api/score-par', 'api_par_score', score_par_controller.route, methods=['GET', 'POST'])
 
 if __name__ == "__main__":
 	app.run(host='127.0.0.1', port=5001, debug=False, threaded=False)
