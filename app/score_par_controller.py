@@ -11,22 +11,21 @@ class PreloadError(Exception):
 ''' Scoring a paragraph by comparing it to idea units sentence by sentence.
 '''
 class ScoreParController(object):
-	def __init__(self, max_par_len=1000, max_targets=5, max_responses=5):
+	def __init__(self, max_par_len=1000, max_targets=5, max_responses=5, require_auth=True):
 		self.max_par_len = max_par_len
 		self.max_targets = max_targets
 		self.max_responses = max_responses
+		self.require_auth = require_auth
 
 	def authenticate(self):
-		req = request.args if request.method == "GET" else request.form
-		api_key = req.get('api_key', None)
-		if api_key:
-			payload = {"apiKey": api_key}
-			r = requests.get('http://ultron.psych.purdue.edu/checkKey', params=payload)
-			if r.text != "1":
-				raise self.errors.append("invalid api key")
-		else:
-			pass # CHANGEME FOR PRODUCTION
-			#raise self.errors.append("api key not supplied")
+		def authenticate(self):
+			if not self.require_auth: pass
+		    else:
+				req = request.args if request.method == "GET" else request.form
+				api_key = req.get('api_key', None)
+				if not api_key: raise self.errors.append("missing api_key")
+				if not (api_key in KeyList): self.errors.append("invalid api key")
+				pass
 
 	def extractInfo(self):
 		req = request.args if request.method == "GET" else request.form

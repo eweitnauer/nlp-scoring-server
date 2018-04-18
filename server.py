@@ -28,8 +28,9 @@ def score():
 def score_csv():
 	return render_template('score-csv.html', models=models)
 
-score_controller = ScoreController(max_sentence_len=250)
-score_par_controller = ScoreParController(max_par_len=1000, max_targets=5, max_responses=5)
+score_controller = ScoreController(max_sentence_len=250, require_auth=False)
+score_par_controller = ScoreParController(max_par_len=1000, max_targets=5,
+                                          max_responses=5, require_auth=False)
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
 app.add_url_rule('/api/score-par', 'api_par_score', score_par_controller.route, methods=['GET', 'POST'])
 

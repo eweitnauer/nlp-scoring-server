@@ -31,7 +31,7 @@ infersent = torch.load('encoders/infersent/infersent.allnli.pickle', map_locatio
 infersent.use_cuda = False
 ```
 
-with 
+with
 
 ```
 infersent = torch.load('encoders/infersent/infersent.allnli.pickle')
