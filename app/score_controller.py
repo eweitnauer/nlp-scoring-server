@@ -5,18 +5,18 @@ import math
 from config.api_keys import KeyList
 
 # need to preload all models with trained classifiers
-# CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
-# CachedClassifier(['bow', 'feature_based'], 'bow_fb-college')
-# CachedClassifier(['infersent'], 'infersent-sick')
-# CachedClassifier(['infersent'], 'infersent-college')
-# CachedClassifier(['infersent', 'feature_based'], 'infersent_fb-college')
-# CachedClassifier(['feature_based'], 'fb-college')
-# CachedClassifier(['bow'], 'bow-college')
+CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
+CachedClassifier(['bow', 'feature_based'], 'bow_fb-college')
+CachedClassifier(['infersent'], 'infersent-sick')
+CachedClassifier(['infersent'], 'infersent-college')
+CachedClassifier(['infersent', 'feature_based'], 'infersent_fb-college')
+CachedClassifier(['feature_based'], 'fb-college')
+CachedClassifier(['bow'], 'bow-college')
 
 # optionally preload untrained models to make the first request faster
-# CachedClassifier(['bow'])
+CachedClassifier(['bow'])
 CachedClassifier(['quickscore'])
-# CachedClassifier(['infersent'])
+CachedClassifier(['infersent'])
 
 class PreloadError(Exception):
 	pass

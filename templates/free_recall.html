@@ -115,7 +115,8 @@ var active_query = false;
 function queryScoreServer(idea_units, user_text, model, status_el) {
   if (active_query) return;
   var t0 = Date.now();
-  var params = { targets: JSON.stringify(idea_units.map(iu => iu.idea)), response: user_text, models: model.encoder };
+  var params = { targets: JSON.stringify(idea_units.map(iu => iu.idea)), response: user_text
+               , models: model.encoder, api_key: '{{api_key}}' };
   if (model.classifier) params.classifier = model.classifier;
   status_el.html(spinner_html + '<span style="vertical-align: middle">&nbsp;querying server...</span>');
   active_query = true;
@@ -137,8 +138,14 @@ function queryScoreServer(idea_units, user_text, model, status_el) {
 function showFeedbackData(ideas, data) {
   let missing_labels = ideas.filter((iu, idx) => data.scores[idx] < THRESHOLD)
                                 .map(iu => iu.label);
+  let covered_labels = ideas.filter((iu, idx) => data.scores[idx] >= THRESHOLD)
+                                .map(iu => iu.label);
   let text = 'You covered ' + (ideas.length - missing_labels.length) + ' of '
-              + ideas.length + ' idea units.';
+              + ideas.length + ' idea units';
+  if (covered_labels.length > 0) text += ' (' + covered_labels.join(', ') + ').';
+  else text += '.';
+
+  text += '\n\n';
 
   if (missing_labels.length === 0) text += ' Great job!';
   else text += ' Please write more about: ' + missing_labels.join(', ') + '.';

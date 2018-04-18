@@ -20,17 +20,19 @@ CORS(app)
 def index():
 	return redirect(url_for('score'))
 
+api_key_for_UI = None
+
 @app.route('/score')
 def score():
-	return render_template('score.html', models=models, api_key=None)
+	return render_template('score.html', models=models, api_key=api_key_for_UI)
 
 @app.route('/score/csv')
 def score_csv():
-	return render_template('score-csv.html', models=models, api_key=None)
+	return render_template('score-csv.html', models=models, api_key=api_key_for_UI)
 
 @app.route('/free-recall')
 def recall():
-	return render_template('free_recall.html', models=models)
+	return render_template('free_recall.html', models=models, api_key=api_key_for_UI)
 
 score_controller = ScoreController(max_sentence_len=250, require_auth=False)
 score_par_controller = ScoreParController(max_par_len=2000, max_targets=30,
@@ -40,4 +42,4 @@ app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GE
 app.add_url_rule('/api/score-par', 'api_par_score', score_par_controller.route, methods=['GET', 'POST'])
 
 if __name__ == "__main__":
-	app.run(host='127.0.0.1', port=5002, debug=False, threaded=False)
+	app.run(host='127.0.0.1', port=5001, debug=False, threaded=False)
