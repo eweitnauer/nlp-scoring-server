@@ -85,6 +85,6 @@ See the previous section for supported encoder models and classifiers.
 | version | always | value representing version of the api called | semantic version number |
 | errors | optional | a list of errors that occurred | array of strings |
 | sentences | optional | student response split into sentences | array of strings |
-| scores | optional | array of score arrays; the 1st score array contains the similarity scores of the first response sentence to each idea unit | array of arrays of scores between 0 and 1 |
+| scores | optional | array of score arrays; the 1st score array contains the similarity scores of the first idea unit to all response sentences | array of arrays of scores between 0 and 1 |
 | models | optional | the models that were used | array of strings |
 | classifier | optional | the classifier that was used | string |

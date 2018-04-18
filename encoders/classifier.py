@@ -28,9 +28,9 @@ def CachedClassifier(model_names=[], classifier_name=None, from_cache_only=False
     if classifier_name: key += '@' + classifier_name
     if not (key in cache):
         if from_cache_only: return False
-        print 'cache miss', key
+        print('cache miss', key)
         cache[key] = Classifier(model_names, (classifier_name+'.h5') if classifier_name else None)
-    else: print 'cache hit', key
+    else: print('cache hit', key)
     return cache[key]
 
 # Initialize with a list of model names (bow, feature_based, infersent, quickscore),

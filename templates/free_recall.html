@@ -1,0 +1,267 @@
+{% extends "layout.html" %}{% block content %}
+<h4>NLP Scoring Server – Free Recall Demo</h4>
+<form class="card" action="#">
+  <div class="card-content">
+    <span class='card-title'>Idea Units</span>
+    <div class='right-align'><a id='populate-idea-units' class="waves-effect waves-light btn-small">Auto-Populate</a>
+      <div class='idea-units'>
+        <div class="row idea-unit">
+          <div class="input-field col s2 offset-s1">
+            <input type=text>
+            <label>Label</label>
+          </div>
+          <div class="input-field col s8">
+            <input type=text>
+            <label>Idea Unit</label>
+          </div>
+          <div class="col s1" style='text-align: right'>
+            <a class="hide remove_row btn-floating btn waves-effect waves-light orange" style="margin-top: 1.3rem;"><i class="material-icons">remove</i></a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s1 offset-s11" style='text-align: right'>
+          <a class="add_row btn-floating btn waves-effect waves-light green" style="margin-top: 1.3rem;"><i class="material-icons">add</i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<form class="card" action="#">
+  <div class="card-content">
+    <span class='card-title'>Algorithm</span>
+    <div class='nlp-models'>
+      <div class="row nlp-model">
+        <div class="input-field col s5 offset-s1">
+          <select class='encoder'>
+            <option value="" disabled selected>Choose your option</option>
+          </select>
+          <label>Encoder</label>
+        </div>
+        <div class="input-field col s5">
+          <select class='classifier'>
+            <option value="" disabled selected>Choose your option</option>
+          </select>
+          <label>Classifier</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<form class="card" action="#">
+  <div class="card-content">
+    <span class='card-title'>User Input</span>
+      <div class="row">
+        <div class="input-field col s12">
+          <textarea id="user-text" class="materialize-textarea"></textarea>
+          <label for="user-text">Free Recall</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <span id="query_status"></span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12 center-align">
+          <span style='display: inline-block; width: 200px; border-radius: 4px; border: 2px solid orange; padding: 1rem' id='feedback'>
+            Please start writing :)
+          </span>
+        </div>
+      </div>
+  </div>
+</form>
+
+{% endblock %}
+{% block jsScripts %}
+<script>
+var THRESHOLD = 0.75;
+var models = {{ models|tojson }};
+var encoder_opts = getOptions(Object.keys(models), true, 'quickscore');
+
+function getOptions(values, skip_label, active_entry) {
+  return ((skip_label ? [] : ['<option value="" disabled selected>Choose your option</option>'])
+    .concat(values.map(function(value, idx) {
+      var selected = active_entry ? active_entry === value
+                                  : skip_label && idx === 0;
+      return "<option value='" + value + "'" + (selected ? ' selected' : '')
+             + ">" + value + "</option>";
+    })).join('\n'));
+}
+
+function updateClassfier(idx, value) {
+  var classifiers = $('.select-wrapper:has(.classifier)');
+  classifiers.each(function(i, el) {
+    if (i !== idx) return;
+    $('<select class="classifier">' + getOptions(models[value] || [], true) + "</select>")
+      .replaceAll(el)
+      .formSelect();
+  });
+}
+
+function getModel() {
+  return { encoder: $('.nlp-model select.encoder').val()
+        , classifier: $('.nlp-model select.classifier').val() }
+}
+
+
+function feedback(user_text, idea_units) {
+  queryScoreServer(idea_units, user_text, getModel(), $('#query_status'));
+}
+
+var active_query = false;
+function queryScoreServer(idea_units, user_text, model, status_el) {
+  if (active_query) return;
+  var t0 = Date.now();
+  var params = { targets: JSON.stringify(idea_units.map(iu => iu.idea)), response: user_text, models: model.encoder };
+  if (model.classifier) params.classifier = model.classifier;
+  status_el.html(spinner_html + '<span style="vertical-align: middle">&nbsp;querying server...</span>');
+  active_query = true;
+
+  $.get("/api/score-par", params, function(data) {
+    active_query = false;
+    console.log(data);
+    if (data.errors && data.errors.length > 0) {
+      status_el.html('<span class="deep-orange lighten-4">'+data.errors.join('\n')+'</span>');
+    } else {
+      status_el.html(Date.now()-t0 + ' ms');
+      showFeedbackData(idea_units, data);
+    }
+  }, 'json').fail(function(resp) {
+    status_el.html('<span class="deep-orange lighten-4">'+resp.statusText+'</span>');
+  });
+}
+
+function showFeedbackData(ideas, data) {
+  let missing_labels = ideas.filter((iu, idx) => data.scores[idx] < THRESHOLD)
+                                .map(iu => iu.label);
+  let text = 'You covered ' + (ideas.length - missing_labels.length) + ' of '
+              + ideas.length + ' idea units.';
+
+  if (missing_labels.length === 0) text += ' Great job!';
+  else text += ' Please write more about: ' + missing_labels.join(', ') + '.';
+
+  $('#feedback').text(text);
+}
+
+function getIdeaUnits() {
+  return $.map($('.idea-unit'), function(el) {
+    return { label: $(el).find('input:first').val(), idea: $(el).find('input:last').val() };
+  });
+}
+
+function populateIdeaUnits() {
+  let data =
+[ { label: 'respiratory system', idea: 'The lungs are the main organs of the respiratory system.'},
+  { label: 'size', idea: 'The lungs take up most of the space inside your rib cage.'},
+  { label: 'rib cage', idea: 'Your rib cage protects your lungs.'},
+  { label: 'rib cage', idea: 'Your rib cage protects your heart.'},
+  { label: 'inhale', idea: 'Your lungs inflate when you inhale.'},
+  { label: 'exhale', idea: 'Your lungs deflate when you exhale.'},
+  { label: 'muscles', idea: 'lungs have no muscles themselves'},
+  { label: 'muscles', idea: 'muscles around and below your lungs '},
+  { label: 'muscles', idea: 'Muscles do the work of inflating and deflating'},
+  // { label: 'exhale', idea: 'exhaling makes more space in your lungs.'},
+  // { label: 'air', idea: 'When there’s more space air moves in to fill the space.'},
+  // { label: 'air', idea: 'When there is less space in your lungs the air moves out.'},
+  // { label: 'cleaning', idea: 'Your lungs have an air cleaning system'},
+  // { label: 'dirty', idea: 'The lungs can\’t deliver oxygen if they are dirty.'},
+  // { label: 'dirty', idea: 'The lungs can\'t remove waste if they are dirty.'},
+  // { label: 'mechanisms', idea: 'the respiratory system has built-in mechanisms '},
+  // { label: 'cleaning', idea: 'the respiratory\'s mechanisms keep the lungs clean'},
+  // { label: 'hairs', idea: 'Small hairs inside your nose '},
+  // { label: 'hairs', idea: 'small hairs filter the dust, dirt, and other tiny particles '},
+  // { label: 'hairs', idea: 'the hairs filter things out of the air you breathe.'},
+  // { label: 'goblet', idea: 'Goblet cells present in your nose and airways,'},
+  // { label: 'goblet', idea: 'goblet cells release a sticky mucus '},
+  // { label: 'mucus', idea: 'the sticky mucus helps trap these particles and '},
+  // { label: 'mucus', idea: 'the sticky mucus keeps the air moist.'},
+  // { label: 'cilia', idea: 'Cilia are tiny hair-like structures,'},
+  // { label: 'cilia', idea: 'cilia cover the inside of your airways.'},
+  // { label: 'cilia', idea: 'cilia sweep the “dirty” mucus up towards your throat '},
+  // { label: 'coughing', idea: 'the dirty mucus is coughed out.'},
+  // { label: 'cilia', idea: 'The cilia are part of a type of a cell,'},
+  // { label: 'cilia', idea: 'the cell is called ciliated epithelial cells.'}
+  ];
+
+  var html = data.map(function(datum) { return get_idea_unit_html(datum.label, datum.idea) })
+    .join("\n");
+
+  $('.idea-units').html(html);
+
+  M.updateTextFields();
+}
+
+$(document).ready(function() {
+  $('.encoder').html(encoder_opts);
+  $('select').formSelect();
+  updateClassfier(0, $('select.encoder')[0].value);
+
+  $('.nlp-models').on('change', '.encoder', function() {
+    let idx = $('select.encoder').index(this);
+    updateClassfier(idx, this.value);
+  });
+
+  $('#populate-idea-units').on('click', populateIdeaUnits);
+
+  $('.idea-units').on('click', '.remove_row', function() {
+    var idx = $('.remove_row').index(this);
+    $($('.idea-unit')[idx]).remove();
+  });
+
+  let delayed_feedback = _.debounce(feedback, 1000);
+  $('#user-text').on('input', function() {
+    delayed_feedback(this.value, getIdeaUnits());
+  });
+
+  $('.nlp-models').on('click', '.remove_row', function() {
+    var idx = $('.remove_row').index(this);
+    $($('.nlp-model')[idx]).remove();
+  });
+
+  $('.add_row').on('click', function() {
+    var el = $(get_idea_unit_html());
+    $('.idea-units').append(el);
+  });
+
+  $('#score').on('click', function() {
+    processQueries($('#target').val(), $('#response').val(), getModels());
+  });
+});
+
+var get_idea_unit_html = function(label, idea) {
+return `
+<div class="row idea-unit">
+  <div class="input-field col s2 offset-s1">
+    <input type=text value="${label}">
+    <label>Label</label>
+  </div>
+  <div class="input-field col s8">
+    <input type=text value="${idea}">
+    <label>Idea Unit</label>
+  </div>
+  <div class="col s1" style='text-align: right'>
+    <a class="remove_row btn-floating btn waves-effect waves-light orange" style="margin-top: 1.3rem;"><i class="material-icons">remove</i></a>
+  </div>
+</div>
+`
+};
+
+var spinner_html =
+`
+<div class="preloader-wrapper small active" style='vertical-align: middle'>
+    <div class="spinner-layer spinner-green-only">
+      <div class="circle-clipper left">
+        <div class="circle"></div>
+      </div><div class="gap-patch">
+        <div class="circle"></div>
+      </div><div class="circle-clipper right">
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+`
+</script>
+{% endblock %}

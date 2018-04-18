@@ -1,7 +1,7 @@
 from flask import jsonify, request
 import requests
 from encoders.classifier import CachedClassifier
-from nltk import sent_tokenize
+from encoders.split_sentences import splitIntoSentences
 import math
 import json
 
@@ -11,7 +11,7 @@ class PreloadError(Exception):
 ''' Scoring a paragraph by comparing it to idea units sentence by sentence.
 '''
 class ScoreParController(object):
-	def __init__(self, max_par_len=1000, max_targets=5, max_responses=5):
+	def __init__(self, max_par_len=2000, max_targets=30, max_responses=30):
 		self.max_par_len = max_par_len
 		self.max_targets = max_targets
 		self.max_responses = max_responses
@@ -31,15 +31,22 @@ class ScoreParController(object):
 	def extractInfo(self):
 		req = request.args if request.method == "GET" else request.form
 
+		# scoring type (max or all, default is max)
+		scoring_method = req.get('scoring_method', 'max')
+		if scoring_method != 'max' and scoring_method != 'all':
+			self.errors.append('scoring_method must be "max" or "all"')
+		self.score_max = scoring_method == 'max'
+
 		# targets (json array of idea units)
 		self.targets = req.get('targets', None)
 		if not self.targets: self.errors.append("'targets' not present")
 		elif len(self.targets) > self.max_par_len: self.errors.append("'targets' too long")
 		try:
+			print 'targets', self.targets
 			self.targets = json.loads(self.targets)
 			if not isinstance(self.targets, list): self.errors.append("'targets' has wrong format")
-			if len(self.targets) > self.max_targets: self.error.append("too many 'targets'")
-		except JSONDecodeError:
+			if len(self.targets) > self.max_targets: self.errors.append("too many 'targets'")
+		except:
 			self.errors.append('Parsing error for targets')
 
 		# response (sentences separated by full-stops)
@@ -47,7 +54,7 @@ class ScoreParController(object):
 		if not self.response: self.errors.append("'response' not present")
 		elif len(self.response) > self.max_par_len: self.errors.append("'response' too long")
 		else:
-			self.sentences = sent_tokenize(self.response)
+			self.sentences = splitIntoSentences(self.response)
 			if not isinstance(self.sentences, list): self.errors.append("'response' counld not be split into sentences")
 			if len(self.sentences) > self.max_responses: self.errors.append("too many response sentences")
 			if len(self.sentences) == 0: self.errors.append("found no sentences in response")
@@ -69,11 +76,12 @@ class ScoreParController(object):
 			classifier = CachedClassifier(self.model_names, self.classifier_name, from_cache_only=cache_only)
 			if not classifier: raise PreloadError()
 			scores = []
-			for resp in self.sentences:
+			for target in self.targets:
 				row = []
-				for target in self.targets:
+				for resp in self.sentences:
 					score = classifier.get_score([target], [resp])[0]
 					if math.isnan(score): score = "NaN"
+					print 'score for', target, 'and', resp, 'is', score
 					row.append(score)
 				scores.append(row)
 			return scores
@@ -88,7 +96,7 @@ class ScoreParController(object):
 		self.errors = []
 		resp = {
 			'name': "Automated Scoring",
-		    'version': "1.2"
+		  'version': "1.2"
 		}
 		try:
 			self.extractInfo()
@@ -97,7 +105,11 @@ class ScoreParController(object):
 			self.authenticate()
 			resp['sentences'] = self.sentences
 			resp['scores'] = self.score()
+			if self.score_max:
+				resp['scores'] = [max(row) for row in resp['scores']]
+			print 'response is', resp
 			return jsonify(resp)
-		except:
+		except Exception as ex:
 			resp['errors'] = self.errors
+			print self.errors
 			return jsonify(resp)

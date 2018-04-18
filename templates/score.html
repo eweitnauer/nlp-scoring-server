@@ -97,12 +97,12 @@ function getOptions(values, skip_label) {
 }
 
 function updateClassfier(idx, value) {
-  var classifiers = $('.select-wrapper.classifier');
+  var classifiers = $('.select-wrapper:has(.classifier)');
   classifiers.each(function(i, el) {
     if (i !== idx) return;
     $('<select class="classifier">' + getOptions(models[value] || [], true) + "</select>")
       .replaceAll(el)
-      .material_select();
+      .formSelect();
   });
 }
 
@@ -152,10 +152,10 @@ $(document).ready(function() {
     var el = $(nlp_model_html);
     $('.nlp-models').append(el);
     $('.encoder', el).html(encoder_opts);
-    $('select', el).material_select();
+    $('select', el).formSelect();
   });
 
-  $('select').material_select();
+  $('select').formSelect();
 
   $('#score').on('click', function() {
     processQueries($('#target').val(), $('#response').val(), getModels());

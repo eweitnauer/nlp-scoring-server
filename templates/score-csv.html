@@ -103,12 +103,12 @@ function getOptions(values, skip_label) {
 }
 
 function updateClassfier(idx, value) {
-  var classifiers = $('.select-wrapper.classifier');
+  var classifiers = $('.select-wrapper:has(.classifier)');
   classifiers.each(function(i, el) {
     if (i !== idx) return;
     $('<select class="classifier">' + getOptions(models[value] || [], true) + "</select>")
       .replaceAll(el)
-      .material_select();
+      .formSelect();
   });
 }
 
@@ -191,7 +191,7 @@ $(document).ready(function() {
     $($('.nlp-model')[idx]).remove();
   });
 
-  $('select').material_select();
+  $('select').formSelect();
 
   $('#score').on('click', function() {
     processQuery(decodeURI($('select.target-column-name').val()), decodeURI($('select.response-column-name').val()), getModels()[0]);
@@ -202,7 +202,7 @@ $(document).ready(function() {
 
   function updateSelectOptions(el_class, option_str) {
     $('<select class="'+el_class+'">' + option_str + "</select>")
-      .replaceAll($('.select-wrapper.'+el_class));
+      .replaceAll($('.select-wrapper:has(.'+el_class+')'));
   }
 
   function onCSVFileChange() {
@@ -223,10 +223,10 @@ $(document).ready(function() {
         }).join('\n');
         updateSelectOptions("target-column-name", selectOpts);
         $('.target-column-name option[value=target]').attr('selected', true);
-        $('.target-column-name').material_select();
+        $('.target-column-name').formSelect();
         updateSelectOptions("response-column-name", selectOpts);
         $('.response-column-name option[value=response]').attr('selected', true);
-        $('.response-column-name').material_select();
+        $('.response-column-name').formSelect();
 
       }
     });
