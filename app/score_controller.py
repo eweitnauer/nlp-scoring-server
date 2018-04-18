@@ -2,9 +2,10 @@ from flask import jsonify, request
 import requests
 from encoders.classifier import CachedClassifier
 import math
+from config.api_keys import KeyList
 
-# # need to preload all models with trained classifiers
-CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
+# need to preload all models with trained classifiers
+# CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
 # CachedClassifier(['bow', 'feature_based'], 'bow_fb-college')
 # CachedClassifier(['infersent'], 'infersent-sick')
 # CachedClassifier(['infersent'], 'infersent-college')
@@ -12,8 +13,8 @@ CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
 # CachedClassifier(['feature_based'], 'fb-college')
 # CachedClassifier(['bow'], 'bow-college')
 
-# # optionally preload untrained models to make the first request faster
-CachedClassifier(['bow'])
+# optionally preload untrained models to make the first request faster
+# CachedClassifier(['bow'])
 CachedClassifier(['quickscore'])
 # CachedClassifier(['infersent'])
 
@@ -21,20 +22,21 @@ class PreloadError(Exception):
 	pass
 
 class ScoreController(object):
-	def __init__(self, max_sentence_len=250):
+	def __init__(self, max_sentence_len=250, require_auth=True):
 		self.max_sentence_len = max_sentence_len
+		self.require_auth = require_auth
 
 	def authenticate(self):
-		req = request.args if request.method == "GET" else request.form
-		api_key = req.get('api_key', None)
-		if api_key:
-			payload = {"apiKey": api_key}
-			r = requests.get('http://ultron.psych.purdue.edu/checkKey', params=payload)
-			if r.text != "1":
-				raise self.errors.append("invalid api key")
+		if not self.require_auth: pass
 		else:
-			pass # CHANGEME FOR PRODUCTION
-			#raise self.errors.append("api key not supplied")
+			req = request.args if request.method == "GET" else request.form
+			api_key = req.get('api_key', None)
+			if not api_key: raise self.errors.append("missing api_key")
+			print 'checking key'
+			if not (api_key in KeyList):
+				print 'not in list'
+				raise self.errors.append("invalid api key")
+			pass
 
 	def extractInfo(self):
 		req = request.args if request.method == "GET" else request.form

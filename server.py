@@ -22,18 +22,20 @@ def index():
 
 @app.route('/score')
 def score():
-	return render_template('score.html', models=models)
+	return render_template('score.html', models=models, api_key=None)
 
 @app.route('/score/csv')
 def score_csv():
-	return render_template('score-csv.html', models=models)
+	return render_template('score-csv.html', models=models, api_key=None)
 
 @app.route('/free-recall')
 def recall():
 	return render_template('free_recall.html', models=models)
 
-score_controller = ScoreController(max_sentence_len=250)
-score_par_controller = ScoreParController(max_par_len=2000, max_targets=30, max_responses=30)
+score_controller = ScoreController(max_sentence_len=250, require_auth=False)
+score_par_controller = ScoreParController(max_par_len=2000, max_targets=30,
+	                                        max_responses=30, require_auth=False)
+
 app.add_url_rule('/api/score', 'api_score', score_controller.route, methods=['GET', 'POST'])
 app.add_url_rule('/api/score-par', 'api_par_score', score_par_controller.route, methods=['GET', 'POST'])
 

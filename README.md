@@ -1,8 +1,8 @@
 # NLP Scoring Server
 
-This repository combines several NLP approaches to determine the similarity of sentences.
+This repository combines several algorithms from the natural language processing field (NLP) to determine the similarity of sentences.
 
-The work is funded by a IES grant of Dr. Michael N. Jones and Dr. Jeffrey D. Karpicke. The encoder and classifier components are based on [this work](https://github.com/FTAsr/STS) from Dr. Jones group. The server part is inspired by the implementation of [Anirudh](https://github.com/anirudhchellani) in Dr. Karpicke's group.
+The work is funded by an IES grant of Dr. Michael N. Jones and Dr. Jeffrey D. Karpicke. The encoder and classifier components are based on [this work](https://github.com/FTAsr/STS) from Dr. Jones' group. The server part is inspired by the implementation of [Anirudh](https://github.com/anirudhchellani) in Dr. Karpicke's group.
 
 Please see the [SETUP.md](https://github.com/eweitnauer/nlp-scoring-server/blob/master/SETUP.md) file about how to install this project.
 
@@ -14,7 +14,7 @@ In order to get a score for the similarity of a response string to a target stri
 
 | Parameter | Required | Use Case | Type |
 | :---: | :---: | :--- | :---: |
-| api_key | required | authenticates the api call | string |
+| api_key | required | authenticates the api call (authentication can be disabled in the `server.py` file) | string |
 | target | required | target/gold answer to compare the student response to | string |
 | response | required | response supplied by the student/user | string  |
 | models | required | comma-separated list of encoder models. See below for available models. | string |
@@ -54,18 +54,13 @@ Currently, we have the following pre-trained classifiers:
 | models | optional | the models that were used | array of strings |
 | classifier | optional | the classifier that was used | string |
 
-
-
 ### Score Paragraph Requests
 
-In order to get a score matrix that compares several targets (idea units) with a student response, send
-a get or post request to `/api/score-par`. The student response will be split into sentences.
-Each response sentence will be compared to each idea unit using the same method as in the Score Requests.
-Provide the following query parameters:
+In order to get a score matrix that compares several targets (idea units) with a student response, send a `GET` or `POST` request to `/api/score-par`. The student response will be split into sentences. Each response sentence will be compared to each idea unit using the same method as in the Score Requests. Provide the following query parameters:
 
 | Parameter | Required | Use Case | Type |
 | :---: | :---: | :--- | :---: |
-| api_key | required | authenticates the api call | string |
+| api_key | required | authenticates the api call (authentication can be disabled in the `server.py` file) | string |
 | targets | required | JSON string of array of idea units to compare the student response to | string |
 | response | required | response supplied by the student/user, will be split into sentences | string  |
 | models | required | comma-separated list of encoder models. See below for available models. | string |
