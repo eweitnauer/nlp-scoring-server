@@ -73,7 +73,7 @@ var encoder_opts = getOptions(Object.keys(models));
 var csv_data = [];
 
 function queryScoreServer(target, response, model, callback) {
-  var params = { target, response, models: model.encoder };
+  var params = { target, response, models: model.encoder, api_key:'{{api_key}}' };
   if (model.classifier) params.classifier = model.classifier;
   let xhr = $.get("/api/score", params, function(data) {
     if (data.errors && data.errors.length > 0) {

@@ -67,7 +67,7 @@ var encoder_opts = getOptions(Object.keys(models));
 
 function queryScoreServer(target, response, model, score_el, time_el) {
   var t0 = Date.now();
-  var params = { target, response, models: model.encoder };
+  var params = { target, response, models: model.encoder, api_key:'{{api_key}}' };
   if (model.classifier) params.classifier = model.classifier;
   $.get("/api/score", params, function(data) {
     if (data.errors && data.errors.length > 0) {

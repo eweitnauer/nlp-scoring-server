@@ -5,18 +5,18 @@ import math
 from config.api_keys import KeyList
 
 # need to preload all models with trained classifiers
-CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
-CachedClassifier(['bow', 'feature_based'], 'bow_fb-college')
-CachedClassifier(['infersent'], 'infersent-sick')
-CachedClassifier(['infersent'], 'infersent-college')
-CachedClassifier(['infersent', 'feature_based'], 'infersent_fb-college')
-CachedClassifier(['feature_based'], 'fb-college')
-CachedClassifier(['bow'], 'bow-college')
+# CachedClassifier(['bow', 'feature_based'], 'bow_fb-sick')
+# CachedClassifier(['bow', 'feature_based'], 'bow_fb-college')
+# CachedClassifier(['infersent'], 'infersent-sick')
+# CachedClassifier(['infersent'], 'infersent-college')
+# CachedClassifier(['infersent', 'feature_based'], 'infersent_fb-college')
+# CachedClassifier(['feature_based'], 'fb-college')
+# CachedClassifier(['bow'], 'bow-college')
 
 # optionally preload untrained models to make the first request faster
-CachedClassifier(['bow'])
+# CachedClassifier(['bow'])
 CachedClassifier(['quickscore'])
-CachedClassifier(['infersent'])
+# CachedClassifier(['infersent'])
 
 class PreloadError(Exception):
 	pass
@@ -28,11 +28,14 @@ class ScoreController(object):
 
 	def authenticate(self):
 		if not self.require_auth: pass
-	    else:
+		else:
 			req = request.args if request.method == "GET" else request.form
 			api_key = req.get('api_key', None)
 			if not api_key: raise self.errors.append("missing api_key")
-			if not (api_key in KeyList): self.errors.append("invalid api key")
+			print 'checking key'
+			if not (api_key in KeyList):
+				print 'not in list'
+				raise self.errors.append("invalid api key")
 			pass
 
 	def extractInfo(self):

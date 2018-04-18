@@ -22,11 +22,11 @@ def index():
 
 @app.route('/score')
 def score():
-	return render_template('score.html', models=models)
+	return render_template('score.html', models=models, api_key=None)
 
 @app.route('/score/csv')
 def score_csv():
-	return render_template('score-csv.html', models=models)
+	return render_template('score-csv.html', models=models, api_key=None)
 
 score_controller = ScoreController(max_sentence_len=250, require_auth=False)
 score_par_controller = ScoreParController(max_par_len=1000, max_targets=5,

@@ -20,11 +20,11 @@ class ScoreParController(object):
 	def authenticate(self):
 		def authenticate(self):
 			if not self.require_auth: pass
-		    else:
+			else:
 				req = request.args if request.method == "GET" else request.form
 				api_key = req.get('api_key', None)
 				if not api_key: raise self.errors.append("missing api_key")
-				if not (api_key in KeyList): self.errors.append("invalid api key")
+				if not (api_key in KeyList): raise self.errors.append("invalid api key")
 				pass
 
 	def extractInfo(self):
